@@ -1,6 +1,7 @@
+use std::hash::Hash;
 
 /// A trait for representing elements of the underlying vector of `BitSet`.
-pub trait BitBlock: Copy + Default {
+pub trait BitBlock: Copy + Default + Eq + Hash {
   #[doc(hidden)]
   const NUM_BITS: usize;
 
@@ -21,6 +22,12 @@ pub trait BitBlock: Copy + Default {
 
   #[doc(hidden)]
   fn reset_bit(&mut self, index: usize);
+
+  #[doc(hidden)]
+  fn lowest_bits_eq(self, other: Self, nbits: usize) -> bool;
+
+  #[doc(hidden)]
+  fn hash_lowest_bits<H: std::hash::Hasher>(self, nbits: usize, state: &mut H);
 }
 
 macro_rules! impl_bit_block {
@@ -63,6 +70,24 @@ macro_rules! impl_bit_block {
         assert!(index < Self::NUM_BITS,
           "index out of range: {} >= {}", index, Self::NUM_BITS);
         *self &= !(1 << index);
+      }
+
+      fn lowest_bits_eq(self, other: $type, nbits: usize) -> bool {
+        if nbits >= Self::NUM_BITS {
+          self == other
+        } else {
+          self & ((1 << nbits) - 1) == other & ((1 << nbits) - 1)
+        }
+      }
+
+      fn hash_lowest_bits<H: std::hash::Hasher>(self, nbits: usize, state: &mut H) {
+        use std::hash::Hash;
+
+        if nbits >= Self::NUM_BITS {
+          self.hash(state);
+        } else {
+          (self & ((1 << nbits) - 1)).hash(state)
+        }
       }
     }
   }
