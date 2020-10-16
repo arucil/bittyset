@@ -8,14 +8,17 @@ pub use self::block::BitBlock;
 mod iter;
 mod block;
 mod impls;
+mod macros;
 
 ///
 #[derive(Clone, Default)]
 pub struct BitSet<T = usize> {
-  /// # Invariant
+  /// # Invariants
   /// If `num_bits` is not a multiple of `T::NUM_BITS`, the highest
   /// `T::NUM_BITS - num_bits % T::NUM_BITS` bits of the last block of the set
   /// are all zeros.
+  ///
+  /// the bit indexed by `num_bits` is always set.
   vec: Vec<T>,
   /// Number of all bits (set & unset).
   num_bits: usize,
@@ -77,7 +80,7 @@ where
       let x = self.vec[i];
       if x.count_ones() != 0 {
         self.vec.truncate(i + 1);
-        self.num_bits = (i + 1) * T::NUM_BITS - x.highest_zeros();
+        self.num_bits = (i + 1) * T::NUM_BITS - x.leading_zeros() as usize;
         return;
       }
     }
@@ -92,7 +95,7 @@ where
 
   /// Returns the number of elements in the set.
   pub fn len(&self) -> usize {
-    self.vec.iter().map(|x| x.count_ones()).sum()
+    self.vec.iter().map(|x| x.count_ones() as usize).sum()
   }
 
   /// Returns whether the set is empty.

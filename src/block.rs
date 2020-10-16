@@ -1,18 +1,16 @@
+use std::ops::{BitOrAssign, BitAndAssign, BitXorAssign};
 use std::hash::Hash;
+use num_traits::int::PrimInt;
 
 /// A trait for representing elements of the underlying vector of `BitSet`.
-pub trait BitBlock: Copy + Default + Eq + Hash {
+pub trait BitBlock: Default + Eq + Hash + PrimInt +
+  BitOrAssign + BitAndAssign + BitXorAssign
+{
   #[doc(hidden)]
   const NUM_BITS: usize;
 
   #[doc(hidden)]
   fn find_lowest_set_bit(self, from: usize) -> Option<usize>;
-
-  #[doc(hidden)]
-  fn highest_zeros(self) -> usize;
-
-  #[doc(hidden)]
-  fn count_ones(self) -> usize;
 
   #[doc(hidden)]
   fn bit(self, index: usize) -> bool;
@@ -46,14 +44,6 @@ macro_rules! impl_bit_block {
         } else {
           Some(x)
         }
-      }
-
-      fn count_ones(self) -> usize {
-        self.count_ones() as usize
-      }
-
-      fn highest_zeros(self) -> usize {
-        self.leading_zeros() as usize
       }
 
       fn bit(self, index: usize) -> bool {

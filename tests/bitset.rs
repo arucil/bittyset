@@ -161,3 +161,80 @@ fn hash_large() {
 
   assert_ne!(my_hash(&set1), my_hash(&set2));
 }
+
+#[test]
+fn bitor() {
+  let set1 = vec![0,14,8,5,27,15].into_iter().collect::<BitSet>();
+  let set2 = vec![5,1768,8,12].into_iter().collect::<BitSet>();
+  let set3 = vec![0,5,8,12,14,15,27,1768].into_iter().collect::<BitSet>();
+
+  assert_eq!(set1.clone() | set2.clone(), set3);
+
+  assert_eq!(set2 | set1, set3);
+}
+
+#[test]
+fn bitor_large() {
+  let set1 = (0..1000000).step_by(5).collect::<BitSet>();
+  let set2 = (0..1000000).step_by(3).collect::<BitSet>();
+  let mut set3 = set1.clone();
+  set3.extend((0..1000000).step_by(3));
+
+  assert_eq!(set1.clone() | set2.clone(), set3);
+
+  assert_eq!(set2 | set1, set3);
+}
+
+#[test]
+fn bitand() {
+  let set1 = vec![0,14,8,5,27,15,91].into_iter().collect::<BitSet>();
+  let set2 = vec![5,1768,8,27,12].into_iter().collect::<BitSet>();
+  let set3 = vec![5,8,27].into_iter().collect::<BitSet>();
+
+  assert_eq!(set1.clone() & set2.clone(), set3);
+
+  assert_eq!(set2 & set1, set3);
+}
+
+#[test]
+fn bitand_large() {
+  let set1 = (0..1000000).step_by(5).collect::<BitSet>();
+  let set2 = (0..1000000).step_by(3).collect::<BitSet>();
+  let set3 = (0..1000000).step_by(15).collect::<BitSet>();
+
+  assert_eq!(set1.clone() & set2.clone(), set3);
+
+  assert_eq!(set2 & set1, set3);
+}
+
+#[test]
+fn set_difference() {
+  let set1 = vec![0,14,8,5,27,15,91].into_iter().collect::<BitSet>();
+  let set2 = vec![5,1768,8,27,12].into_iter().collect::<BitSet>();
+  let set3 = vec![0,14,15,91].into_iter().collect::<BitSet>();
+  let set4 = vec![1768,12].into_iter().collect::<BitSet>();
+
+  assert_eq!(set1.clone() - set2.clone(), set3);
+
+  assert_eq!(set2 - set1, set4);
+}
+
+#[test]
+fn set_difference_large() {
+  let set1 = (0..1000000).step_by(5).collect::<BitSet>();
+  let set2 = (0..1000000).step_by(3).collect::<BitSet>();
+
+  let mut set3 = (0..1000000).step_by(5).collect::<BitSet>();
+  for i in (0..1000000).step_by(3) {
+    set3.remove(i);
+  }
+
+  let mut set4 = (0..1000000).step_by(3).collect::<BitSet>();
+  for i in (0..1000000).step_by(5) {
+    set4.remove(i);
+  }
+
+  assert_eq!(set1.clone() - set2.clone(), set3);
+
+  assert_eq!(set2 - set1, set4);
+}
