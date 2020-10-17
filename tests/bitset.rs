@@ -179,6 +179,21 @@ fn bitor_prop(vec1: Vec<u16>, vec2: Vec<u16>) -> bool {
   &set1 | &set2 == set3 && set1 | set2 == set3
 }
 
+#[quickcheck]
+fn bitor_assign_ref_prop(vec1: Vec<u16>, vec2: Vec<u16>) -> bool {
+  let vec1 = vec1.into_iter().map(|x| x as usize).collect::<Vec<_>>();
+  let vec2 = vec2.into_iter().map(|x| x as usize).collect::<Vec<_>>();
+  let mut set1 = vec1.clone().into_iter().collect::<BitSet>();
+  let set2 = vec2.clone().into_iter().collect::<BitSet>();
+  let mut vec1 = vec1;
+  vec1.extend(vec2);
+  let set3 = vec1.into_iter().collect::<HashSet<_>>().into_iter().collect::<BitSet>();
+
+  set1 |= &set2;
+
+  set1 == set3
+}
+
 #[test]
 fn bitor_large() {
   let set1 = (0..1000000).step_by(5).collect::<BitSet>();
@@ -207,6 +222,23 @@ fn bitand_prop(vec1: Vec<u16>, vec2: Vec<u16>) -> bool {
   &set1 & &set2 == set3 && set1 & set2 == set3
 }
 
+#[quickcheck]
+fn bitand_assign_ref_prop(vec1: Vec<u16>, vec2: Vec<u16>) -> bool {
+  let vec1 = vec1.into_iter().map(|x| x as usize).collect::<Vec<_>>();
+  let vec2 = vec2.into_iter().map(|x| x as usize).collect::<Vec<_>>();
+  let mut set1 = vec1.clone().into_iter().collect::<BitSet>();
+  let set2 = vec2.clone().into_iter().collect::<BitSet>();
+  let hset1 = vec1.into_iter().collect::<HashSet<_>>();
+  let set3 = vec2.into_iter()
+    .filter(|x| hset1.contains(x))
+    .collect::<HashSet<_>>()
+    .into_iter()
+    .collect::<BitSet>();
+
+  set1 &= &set2;
+  set1 == set3
+}
+
 #[test]
 fn bitand_large() {
   let set1 = (0..1000000).step_by(5).collect::<BitSet>();
@@ -228,6 +260,20 @@ fn set_difference_prop(vec1: Vec<u16>, vec2: Vec<u16>) -> bool {
   let set3 = vec1.into_iter().filter(|x| !hset2.contains(x)).collect::<BitSet>();
 
   &set1 - &set2 == set3 && set1 - set2 == set3
+}
+
+#[quickcheck]
+fn set_difference_assign_ref_prop(vec1: Vec<u16>, vec2: Vec<u16>) -> bool {
+  let vec1 = vec1.into_iter().map(|x| x as usize).collect::<Vec<_>>();
+  let vec2 = vec2.into_iter().map(|x| x as usize).collect::<Vec<_>>();
+  let mut set1 = vec1.clone().into_iter().collect::<BitSet>();
+  let set2 = vec2.clone().into_iter().collect::<BitSet>();
+  let hset2 = vec2.into_iter().collect::<HashSet<_>>();
+  let set3 = vec1.into_iter().filter(|x| !hset2.contains(x)).collect::<BitSet>();
+
+  set1 -= &set2;
+
+  set1 == set3
 }
 
 #[test]
@@ -264,6 +310,26 @@ fn bitxor_prop(vec1: Vec<u16>, vec2: Vec<u16>) -> bool {
   let set3 = set3.into_iter().collect::<BitSet>();
 
   &set1 ^ &set2 == set3 && set1 ^ set2 == set3
+}
+
+#[quickcheck]
+fn bitxor_assign_ref_prop(vec1: Vec<u16>, vec2: Vec<u16>) -> bool {
+  let vec1 = vec1.into_iter().map(|x| x as usize).collect::<Vec<_>>();
+  let vec2 = vec2.into_iter().map(|x| x as usize).collect::<Vec<_>>();
+  let mut set1 = vec1.clone().into_iter().collect::<BitSet>();
+  let set2 = vec2.clone().into_iter().collect::<BitSet>();
+  let hset2 = vec2.clone().into_iter().collect::<HashSet<_>>();
+  let mut set3 = vec1.clone().into_iter().chain(vec2).collect::<HashSet<_>>();
+  for x in vec1 {
+    if hset2.contains(&x) {
+      set3.remove(&x);
+    }
+  }
+  let set3 = set3.into_iter().collect::<BitSet>();
+
+  set1 ^= &set2;
+
+  set1 == set3
 }
 
 #[test]
