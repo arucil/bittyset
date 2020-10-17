@@ -30,7 +30,7 @@ where
 
   fn next(&mut self) -> Option<Self::Item> {
     while self.index != self.slice.len() {
-      if let Some(bit) = self.slice[self.index].find_lowest_set_bit(self.bit) {
+      if let Some(bit) = find_lowest_set_bit(self.slice[self.index], self.bit) {
         self.bit = bit + 1;
         return Some(self.index.checked_mul(T::NUM_BITS)
           .and_then(|x| x.checked_add(bit))
@@ -41,5 +41,18 @@ where
       }
     }
     None
+  }
+}
+
+fn find_lowest_set_bit<T: BitBlock>(blk: T, from: usize) -> Option<usize> {
+  if from >= T::NUM_BITS {
+    return None;
+  }
+
+  let x = (blk & !((T::one() << from) - T::one())).trailing_zeros() as usize;
+  if x == T::NUM_BITS {
+    None
+  } else {
+    Some(x)
   }
 }

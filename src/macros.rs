@@ -1,7 +1,8 @@
 
-/// Creates a `BitSet`.
+/// Creates a `BitSet` containing the arguments.
 ///
 /// # Examples
+///
 /// ```
 /// use bittyset::bitset;
 ///

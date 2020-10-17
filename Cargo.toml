@@ -1,11 +1,22 @@
 [package]
 name = "bittyset"
 version = "0.1.0"
+description = "A BitSet type for manipulating bit sets."
+homepage = "https://github.com/arucil/bittyset"
+repository = "https://github.com/arucil/bittyset"
+documentation = "https://docs.rs/bittyset"
+readme = "README.md"
 authors = ["amlo <xplzjwz@gmail.com>"]
+keywords = ["data-structures", "bitset"]
+categories = ["mathematics", "data-structures", "algorithms"]
 edition = "2018"
+license = "MIT"
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"
+quickcheck = "0.9.2"
 
 [dependencies]
 num-traits = "0.2.12"
+quickcheck_macros = "0.9.1"
+gensym = "0.1.0"

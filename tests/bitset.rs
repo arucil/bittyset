@@ -1,7 +1,11 @@
-use bittyset::BitSet;
+use bittyset::{BitSet, bitset};
 use pretty_assertions::{assert_eq, assert_ne};
 use std::hash::{Hash, Hasher};
 use std::collections::hash_map::DefaultHasher;
+use std::collections::HashSet;
+use quickcheck_macros::quickcheck;
+
+mod helper;
 
 #[test]
 fn clear() {
@@ -68,15 +72,15 @@ fn extend() {
 
 #[test]
 fn collect() {
-  let set = vec![37,0,14,7,14].into_iter().collect::<BitSet>();
+  let set = bitset![37,0,14,7,14];
 
   assert_eq!(set.iter().collect::<Vec<_>>(), vec![0,7,14,37]);
 }
 
 #[test]
 fn eq() {
-  let set1 = vec![7,1,4,5,41,4].into_iter().collect::<BitSet>();
-  let mut set2 = vec![7,1,41,4].into_iter().collect::<BitSet>();
+  let set1 = bitset![7,1,4,5,41,4];
+  let mut set2 = bitset![7,1,41,4];
 
   assert_ne!(set1, set2);
 
@@ -90,8 +94,8 @@ fn eq() {
 
   assert_eq!(<BitSet>::new(), <BitSet>::new());
 
-  let set1 = vec![63].into_iter().collect::<BitSet>();
-  let set2 = vec![63].into_iter().collect::<BitSet>();
+  let set1 = bitset![63];
+  let set2 = bitset![63];
 
   assert_eq!(set1, set2);
 }
@@ -124,8 +128,8 @@ where
 
 #[test]
 fn hash() {
-  let set1 = vec![7,1,4,5,41,4].into_iter().collect::<BitSet>();
-  let mut set2 = vec![7,1,41,4].into_iter().collect::<BitSet>();
+  let set1 = bitset![7,1,4,5,41,4];
+  let mut set2 = bitset![7,1,41,4];
 
   assert_ne!(my_hash(&set1), my_hash(&set2));
 
@@ -139,8 +143,8 @@ fn hash() {
 
   assert_eq!(<BitSet>::new(), <BitSet>::new());
 
-  let set1 = vec![63].into_iter().collect::<BitSet>();
-  let set2 = vec![63].into_iter().collect::<BitSet>();
+  let set1 = bitset![63];
+  let set2 = bitset![63];
 
   assert_eq!(my_hash(&set1), my_hash(&set2));
 }
@@ -162,15 +166,17 @@ fn hash_large() {
   assert_ne!(my_hash(&set1), my_hash(&set2));
 }
 
-#[test]
-fn bitor() {
-  let set1 = vec![0,14,8,5,27,15].into_iter().collect::<BitSet>();
-  let set2 = vec![5,1768,8,12].into_iter().collect::<BitSet>();
-  let set3 = vec![0,5,8,12,14,15,27,1768].into_iter().collect::<BitSet>();
+#[quickcheck]
+fn bitor_prop(vec1: Vec<u16>, vec2: Vec<u16>) -> bool {
+  let vec1 = vec1.into_iter().map(|x| x as usize).collect::<Vec<_>>();
+  let vec2 = vec2.into_iter().map(|x| x as usize).collect::<Vec<_>>();
+  let set1 = vec1.clone().into_iter().collect::<BitSet>();
+  let set2 = vec2.clone().into_iter().collect::<BitSet>();
+  let mut vec1 = vec1;
+  vec1.extend(vec2);
+  let set3 = vec1.into_iter().collect::<HashSet<_>>().into_iter().collect::<BitSet>();
 
-  assert_eq!(set1.clone() | set2.clone(), set3);
-
-  assert_eq!(set2 | set1, set3);
+  &set1 | &set2 == set3 && set1 | set2 == set3
 }
 
 #[test]
@@ -185,15 +191,20 @@ fn bitor_large() {
   assert_eq!(set2 | set1, set3);
 }
 
-#[test]
-fn bitand() {
-  let set1 = vec![0,14,8,5,27,15,91].into_iter().collect::<BitSet>();
-  let set2 = vec![5,1768,8,27,12].into_iter().collect::<BitSet>();
-  let set3 = vec![5,8,27].into_iter().collect::<BitSet>();
+#[quickcheck]
+fn bitand_prop(vec1: Vec<u16>, vec2: Vec<u16>) -> bool {
+  let vec1 = vec1.into_iter().map(|x| x as usize).collect::<Vec<_>>();
+  let vec2 = vec2.into_iter().map(|x| x as usize).collect::<Vec<_>>();
+  let set1 = vec1.clone().into_iter().collect::<BitSet>();
+  let set2 = vec2.clone().into_iter().collect::<BitSet>();
+  let hset1 = vec1.into_iter().collect::<HashSet<_>>();
+  let set3 = vec2.into_iter()
+    .filter(|x| hset1.contains(x))
+    .collect::<HashSet<_>>()
+    .into_iter()
+    .collect::<BitSet>();
 
-  assert_eq!(set1.clone() & set2.clone(), set3);
-
-  assert_eq!(set2 & set1, set3);
+  &set1 & &set2 == set3 && set1 & set2 == set3
 }
 
 #[test]
@@ -207,16 +218,16 @@ fn bitand_large() {
   assert_eq!(set2 & set1, set3);
 }
 
-#[test]
-fn set_difference() {
-  let set1 = vec![0,14,8,5,27,15,91].into_iter().collect::<BitSet>();
-  let set2 = vec![5,1768,8,27,12].into_iter().collect::<BitSet>();
-  let set3 = vec![0,14,15,91].into_iter().collect::<BitSet>();
-  let set4 = vec![1768,12].into_iter().collect::<BitSet>();
+#[quickcheck]
+fn set_difference_prop(vec1: Vec<u16>, vec2: Vec<u16>) -> bool {
+  let vec1 = vec1.into_iter().map(|x| x as usize).collect::<Vec<_>>();
+  let vec2 = vec2.into_iter().map(|x| x as usize).collect::<Vec<_>>();
+  let set1 = vec1.clone().into_iter().collect::<BitSet>();
+  let set2 = vec2.clone().into_iter().collect::<BitSet>();
+  let hset2 = vec2.into_iter().collect::<HashSet<_>>();
+  let set3 = vec1.into_iter().filter(|x| !hset2.contains(x)).collect::<BitSet>();
 
-  assert_eq!(set1.clone() - set2.clone(), set3);
-
-  assert_eq!(set2 - set1, set4);
+  &set1 - &set2 == set3 && set1 - set2 == set3
 }
 
 #[test]
@@ -224,17 +235,105 @@ fn set_difference_large() {
   let set1 = (0..1000000).step_by(5).collect::<BitSet>();
   let set2 = (0..1000000).step_by(3).collect::<BitSet>();
 
-  let mut set3 = (0..1000000).step_by(5).collect::<BitSet>();
-  for i in (0..1000000).step_by(3) {
-    set3.remove(i);
-  }
+  let set3 = (0..1000000).step_by(5)
+    .filter(|x| x % 3 != 0)
+    .collect::<BitSet>();
 
-  let mut set4 = (0..1000000).step_by(3).collect::<BitSet>();
-  for i in (0..1000000).step_by(5) {
-    set4.remove(i);
-  }
+  let set4 = (0..1000000).step_by(3)
+    .filter(|x| x % 5 != 0)
+    .collect::<BitSet>();
 
   assert_eq!(set1.clone() - set2.clone(), set3);
 
   assert_eq!(set2 - set1, set4);
+}
+
+#[quickcheck]
+fn bitxor_prop(vec1: Vec<u16>, vec2: Vec<u16>) -> bool {
+  let vec1 = vec1.into_iter().map(|x| x as usize).collect::<Vec<_>>();
+  let vec2 = vec2.into_iter().map(|x| x as usize).collect::<Vec<_>>();
+  let set1 = vec1.clone().into_iter().collect::<BitSet>();
+  let set2 = vec2.clone().into_iter().collect::<BitSet>();
+  let hset2 = vec2.clone().into_iter().collect::<HashSet<_>>();
+  let mut set3 = vec1.clone().into_iter().chain(vec2).collect::<HashSet<_>>();
+  for x in vec1 {
+    if hset2.contains(&x) {
+      set3.remove(&x);
+    }
+  }
+  let set3 = set3.into_iter().collect::<BitSet>();
+
+  &set1 ^ &set2 == set3 && set1 ^ set2 == set3
+}
+
+#[test]
+fn bitxor_large() {
+  let set1 = (0..1000000).step_by(5).collect::<BitSet>();
+  let set2 = (0..1000000).step_by(3).collect::<BitSet>();
+
+  let set3 = (0..1000000).step_by(3)
+    .chain((0..1000000).step_by(5))
+    .filter(|x| x % 15 != 0)
+    .collect::<BitSet>();
+
+  assert_eq!(set1 ^ set2, set3);
+}
+
+#[quickcheck]
+fn is_subset_refl_prop(vec: Vec<u16>) -> bool {
+  let vec = vec.into_iter().map(|x| x as usize).collect::<Vec<_>>();
+  let set = vec.into_iter().collect::<BitSet>();
+  set.is_subset(&set)
+}
+
+#[quickcheck]
+fn is_subset_one_more_prop(om: helper::OneMore) -> bool {
+  let vec1 = om.vec.into_iter().map(|x| x as usize).collect::<Vec<_>>();
+  let mut vec2 = vec1.clone();
+  vec2.push(om.x as usize);
+  let set1 = vec1.into_iter().collect::<BitSet>();
+  let set2 = vec2.into_iter().collect::<BitSet>();
+
+  set1.is_subset(&set2) && !set2.is_subset(&set1)
+}
+
+#[quickcheck]
+fn is_subset_vec_prop(tv: helper::TwoVec) -> bool {
+  let vec1 = tv.vec1.into_iter().map(|x| x as usize).collect::<Vec<_>>();
+  let mut vec2 = tv.vec2.into_iter().map(|x| x as usize).collect::<Vec<_>>();
+  vec2.extend(vec1.clone());
+  let set1 = vec1.into_iter().collect::<BitSet>();
+  let set2 = vec2.into_iter().collect::<BitSet>();
+
+  set1.is_subset(&set2) && (set1.len() == set2.len() || !set2.is_subset(&set1))
+}
+
+#[quickcheck]
+fn is_propert_subset_not_refl_prop(vec: Vec<u16>) -> bool {
+  let vec = vec.into_iter().map(|x| x as usize).collect::<Vec<_>>();
+  let set = vec.into_iter().collect::<BitSet>();
+  !set.is_proper_subset(&set)
+}
+
+#[quickcheck]
+fn is_proper_subset_one_more_prop(om: helper::OneMore) -> bool {
+  let vec1 = om.vec.into_iter().map(|x| x as usize).collect::<Vec<_>>();
+  let mut vec2 = vec1.clone();
+  vec2.push(om.x as usize);
+  let set1 = vec1.into_iter().collect::<BitSet>();
+  let set2 = vec2.into_iter().collect::<BitSet>();
+
+  set1.is_proper_subset(&set2) && !set2.is_proper_subset(&set1)
+}
+
+#[quickcheck]
+fn is_proper_subset_vec_prop(tv: helper::TwoVec) -> bool {
+  let vec1 = tv.vec1.into_iter().map(|x| x as usize).collect::<Vec<_>>();
+  let mut vec2 = tv.vec2.into_iter().map(|x| x as usize).collect::<Vec<_>>();
+  vec2.extend(vec1.clone());
+  let set1 = vec1.into_iter().collect::<BitSet>();
+  let set2 = vec2.into_iter().collect::<BitSet>();
+
+  set1.is_proper_subset(&set2) &&
+    (set1.len() == set2.len() || !set2.is_proper_subset(&set1))
 }

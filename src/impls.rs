@@ -63,93 +63,105 @@ impl<T: BitBlock> Hash for BitSet<T> {
   }
 }
 
-impl<T: BitBlock> BitOr<BitSet<T>> for BitSet<T> {
-  type Output = BitSet<T>;
+macro_rules! op_impl {
+  ( $fn:ident ,; ($name:ident, $method:ident, $assign_op:tt),
+    ($assign_name:ident, $assign_method:ident),
+    ( $lhs:ident, $rhs:ident $(, $swap_cond:tt)? ),
+    $body:tt
+  ) => {
+    impl<T: BitBlock> $name<BitSet<T>> for BitSet<T> {
+      type Output = BitSet<T>;
 
-  fn bitor(mut self, rhs: BitSet<T>) -> BitSet<T> {
-    self |= rhs;
-    self
-  }
-}
-
-impl<T: BitBlock> BitOrAssign<BitSet<T>> for BitSet<T> {
-  fn bitor_assign(&mut self, mut rhs: BitSet<T>) {
-    let nblks = crate::compute_num_blocks::<T>(self.num_bits.min(rhs.num_bits));
-    if self.num_bits < rhs.num_bits {
-      std::mem::swap(self, &mut rhs);
+      fn $method(mut self, rhs: BitSet<T>) -> BitSet<T> {
+        self $assign_op rhs;
+        self
+      }
     }
 
-    for i in 0..nblks {
-      self.vec[i] |= rhs.vec[i];
+    impl<'a, T: BitBlock> $name<&'a BitSet<T>> for &'a BitSet<T> {
+      type Output = BitSet<T>;
+
+      #[allow(unused)]
+      fn $method(self, mut rhs: &'a BitSet<T>) -> BitSet<T> {
+        let mut lhs = self;
+        $(
+          if lhs.num_bits $swap_cond rhs.num_bits {
+            std::mem::swap(&mut lhs, &mut rhs);
+          }
+        )?
+        let mut lhs = lhs.clone();
+        $fn(&mut lhs, rhs);
+        lhs
+      }
+    }
+
+    impl<T: BitBlock> $assign_name<BitSet<T>> for BitSet<T> {
+      #[allow(unused)]
+      fn $assign_method(&mut self, mut rhs: BitSet<T>) {
+        $(
+          if self.num_bits $swap_cond rhs.num_bits {
+            std::mem::swap(self, &mut rhs);
+          }
+        )?
+        $fn(self, &rhs)
+      }
+    }
+
+    #[inline(always)]
+    fn $fn<T: BitBlock>($lhs: &mut BitSet<T>, $rhs: &BitSet<T>) {
+      $body
+    }
+  };
+  ( ($name:ident, $method:ident, $assign_op:tt),
+    ($assign_name:ident, $assign_method:ident),
+    ( $lhs:ident, $rhs:ident $(, $swap_cond:tt)?),
+    $body:tt
+  ) => {
+    gensym::gensym!{
+      op_impl!{
+        ; ($name, $method, $assign_op),
+        ($assign_name, $assign_method),
+        ($lhs, $rhs $(, $swap_cond)?),
+        $body
+      }
     }
   }
 }
 
-impl<T: BitBlock> BitAnd<BitSet<T>> for BitSet<T> {
-  type Output = BitSet<T>;
+op_impl!((BitOr, bitor, |=), (BitOrAssign, bitor_assign), (lhs, rhs, <), {
+  let nblks = crate::compute_num_blocks::<T>(lhs.num_bits.min(rhs.num_bits));
 
-  fn bitand(mut self, rhs: BitSet<T>) -> BitSet<T> {
-    self &= rhs;
-    self
+  for i in 0..nblks {
+    lhs.vec[i] |= rhs.vec[i];
   }
-}
+});
 
-impl<T: BitBlock> BitAndAssign<BitSet<T>> for BitSet<T> {
-  fn bitand_assign(&mut self, mut rhs: BitSet<T>) {
-    let nblks = crate::compute_num_blocks::<T>(self.num_bits.min(rhs.num_bits));
-    if self.num_bits > rhs.num_bits {
-      std::mem::swap(self, &mut rhs);
-    }
+op_impl!((BitAnd, bitand, &=), (BitAndAssign, bitand_assign), (lhs, rhs, >), {
+  let nblks = crate::compute_num_blocks::<T>(lhs.num_bits.min(rhs.num_bits));
 
-    for i in 0..nblks {
-      self.vec[i] &= rhs.vec[i];
-    }
-
-    self.compact();
+  for i in 0..nblks {
+    lhs.vec[i] &= rhs.vec[i];
   }
-}
 
-impl<T: BitBlock> Sub<BitSet<T>> for BitSet<T> {
-  type Output = BitSet<T>;
+  lhs.compact();
+});
 
-  fn sub(mut self, rhs: BitSet<T>) -> BitSet<T> {
-    self -= rhs;
-    self
+op_impl!((BitXor, bitxor, ^=), (BitXorAssign, bitxor_assign), (lhs, rhs, <), {
+  let nblks = crate::compute_num_blocks::<T>(lhs.num_bits.min(rhs.num_bits));
+
+  for i in 0..nblks {
+    lhs.vec[i] ^= rhs.vec[i];
   }
-}
 
-impl<T: BitBlock> SubAssign<BitSet<T>> for BitSet<T> {
-  fn sub_assign(&mut self, rhs: BitSet<T>) {
-    let nblks = crate::compute_num_blocks::<T>(self.num_bits.min(rhs.num_bits));
+  lhs.compact();
+});
 
-    for i in 0..nblks {
-      self.vec[i] &= !rhs.vec[i];
-    }
+op_impl!((Sub, sub, -=), (SubAssign, sub_assign), (lhs, rhs), {
+  let nblks = crate::compute_num_blocks::<T>(lhs.num_bits.min(rhs.num_bits));
 
-    self.compact();
+  for i in 0..nblks {
+    lhs.vec[i] &= !rhs.vec[i];
   }
-}
 
-impl<T: BitBlock> BitXor<BitSet<T>> for BitSet<T> {
-  type Output = BitSet<T>;
-
-  fn bitxor(mut self, rhs: BitSet<T>) -> BitSet<T> {
-    self ^= rhs;
-    self
-  }
-}
-
-impl<T: BitBlock> BitXorAssign<BitSet<T>> for BitSet<T> {
-  fn bitxor_assign(&mut self, mut rhs: BitSet<T>) {
-    let nblks = crate::compute_num_blocks::<T>(self.num_bits.min(rhs.num_bits));
-    if self.num_bits < rhs.num_bits {
-      std::mem::swap(self, &mut rhs);
-    }
-
-    for i in 0..nblks {
-      self.vec[i] ^= rhs.vec[i];
-    }
-
-    self.compact();
-  }
-}
+  lhs.compact();
+});
