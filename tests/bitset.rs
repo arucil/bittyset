@@ -305,7 +305,8 @@ fn is_subset_vec_prop(tv: helper::TwoVec) -> bool {
   let set1 = vec1.into_iter().collect::<BitSet>();
   let set2 = vec2.into_iter().collect::<BitSet>();
 
-  set1.is_subset(&set2) && (set1.len() == set2.len() || !set2.is_subset(&set1))
+  set1.len() == set2.len() ||
+    set1.is_subset(&set2) && !set2.is_subset(&set1)
 }
 
 #[quickcheck]
@@ -334,6 +335,6 @@ fn is_proper_subset_vec_prop(tv: helper::TwoVec) -> bool {
   let set1 = vec1.into_iter().collect::<BitSet>();
   let set2 = vec2.into_iter().collect::<BitSet>();
 
-  set1.is_proper_subset(&set2) &&
-    (set1.len() == set2.len() || !set2.is_proper_subset(&set1))
+  set1.len() == set2.len() ||
+    set1.is_proper_subset(&set2) && !set2.is_proper_subset(&set1)
 }
