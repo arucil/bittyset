@@ -18,7 +18,7 @@ Add the following line to your `Cargo.toml`,
 
 ```toml
 [dependencies]
-...
+# ...
 bittyset = "0.1.0"
 ```
 
