@@ -311,7 +311,7 @@ where
 
   /// Computes the union of the set and `other`.
   ///
-  /// One can also use the bitwise OR operator instead, i.e. `a | b`.
+  /// A corresponding [BitOr](https://doc.rust-lang.org/std/ops/trait.BitOr.html) implementation is also available, i.e. `a | b`.
   ///
   /// # Examples
   ///
@@ -329,9 +329,30 @@ where
     self | other
   }
 
+  /// Computes the union of the set and `other` and then assigns the output to the set.
+  ///
+  /// A corresponding [BitOrAssign](https://doc.rust-lang.org/std/ops/trait.BitOrAssign.html) implementation is also available, i.e. `a |= b`.
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// use bittyset::bitset;
+  ///
+  /// let mut set1 = bitset![7,3,5,18];
+  /// let set2 = bitset![3,1,6,7,24];
+  /// let set3 = bitset![1,3,5,6,7,18,24];
+  ///
+  /// set1.union_with(&set2);
+  ///
+  /// assert_eq!(set1, set3);
+  /// ```
+  pub fn union_with(&mut self, other: &Self) {
+    *self |= other;
+  }
+
   /// Computes the intersection of the set and `other`.
   ///
-  /// One can also use the bitwise AND operator instead, i.e. `a & b`.
+  /// A corresponding [BitAnd](https://doc.rust-lang.org/std/ops/trait.BitAnd.html) implementation is also available, i.e. `a & b`.
   ///
   /// # Examples
   ///
@@ -342,16 +363,38 @@ where
   /// let set2 = bitset![3,1,6,7,24];
   /// let set3 = bitset![3,7];
   ///
-  /// assert_eq!(set1.intersect(&set2), set3);
+  /// assert_eq!(set1.intersection(&set2), set3);
   /// assert_eq!(set1 & set2, set3);
   /// ```
-  pub fn intersect(&self, other: &Self) -> Self {
+  pub fn intersection(&self, other: &Self) -> Self {
     self & other
+  }
+
+  /// Computes the intersection of the set and `other` and then assigns the
+  /// output to the set.
+  ///
+  /// A corresponding [BitAndAssign](https://doc.rust-lang.org/std/ops/trait.BitAndAssign.html) implementation is also available, i.e. `a &= b`.
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// use bittyset::bitset;
+  ///
+  /// let mut set1 = bitset![7,3,5,18];
+  /// let set2 = bitset![3,1,6,7,24];
+  /// let set3 = bitset![3,7];
+  ///
+  /// set1.intersect_with(&set2);
+  ///
+  /// assert_eq!(set1, set3);
+  /// ```
+  pub fn intersect_with(&mut self, other: &Self) {
+    *self &= other;
   }
 
   /// Computes the difference of the set and `other`.
   ///
-  /// One can also use the subtraction operator instead, i.e. `a - b`.
+  /// A corresponding [Sub](https://doc.rust-lang.org/std/ops/trait.Sub.html) implementation is also available, i.e. `a - b`.
   ///
   /// # Examples
   ///
@@ -369,9 +412,31 @@ where
     self - other
   }
 
+  /// Computes the difference of the set and `other` and then assigns the output
+  /// to the set.
+  ///
+  /// A corresponding [SubAssign](https://doc.rust-lang.org/std/ops/trait.SubAssign.html) implementation is also available, i.e. `a -= b`.
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// use bittyset::bitset;
+  ///
+  /// let mut set1 = bitset![7,3,5,18];
+  /// let set2 = bitset![3,1,6,7,24];
+  /// let set3 = bitset![5,18];
+  ///
+  /// set1.difference_with(&set2);
+  ///
+  /// assert_eq!(set1, set3);
+  /// ```
+  pub fn difference_with(&mut self, other: &Self) {
+    *self -= other;
+  }
+
   /// Computes the symmetric difference of the set and `other`.
   ///
-  /// One can also use the bitwise XOR operator instead, i.e. `a ^ b`.
+  /// A corresponding [BitXor](https://doc.rust-lang.org/std/ops/trait.BitXor.html) implementation is also available, i.e. `a ^ b`.
   ///
   /// # Examples
   ///
@@ -387,6 +452,28 @@ where
   /// ```
   pub fn symmetric_difference(&self, other: &Self) -> Self {
     self ^ other
+  }
+
+  /// Computes the symmetric difference of the set and `other` and then assigns
+  /// the output to the set.
+  ///
+  /// A corresponding [BitXorAssign](https://doc.rust-lang.org/std/ops/trait.BitXorAssign.html) implementation is also available, i.e. `a ^= b`.
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// use bittyset::bitset;
+  ///
+  /// let mut set1 = bitset![7,3,5,18];
+  /// let set2 = bitset![3,1,6,7,24];
+  /// let set3 = bitset![1,5,6,18,24];
+  ///
+  /// set1.symmetric_difference_with(&set2);
+  ///
+  /// assert_eq!(set1, set3);
+  /// ```
+  pub fn symmetric_difference_with(&mut self, other: &Self) {
+    *self ^= other;
   }
 
   /// Returns whether the set is a subset of `other`.
