@@ -272,7 +272,7 @@ where
   pub fn insert(&mut self, value: usize) -> bool {
     let nblks = compute_num_blocks::<T>(value + 1);
     if self.vec.len() < nblks {
-      self.vec.resize(nblks, T::default());
+      self.vec.resize(nblks, T::zero());
     }
 
     if self.num_bits < value + 1 {
