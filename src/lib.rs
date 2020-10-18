@@ -48,6 +48,8 @@ mod impls;
 mod macros;
 
 /// A `BitSet` type based on bit vectors.
+///
+/// `T` is an unsigned integer type for the underlying bit vector.
 #[derive(Clone, Default)]
 pub struct BitSet<T = usize> {
   /// # Invariants
