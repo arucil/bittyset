@@ -13,7 +13,7 @@ This project aims to replace [bit-set](https://crates.io/crates/bit-set), which 
 - Performance.
 <details>
   <summary>
-    Performance comparison with [bit-set](https://crates.io/crates/bit-set):
+    Performance comparison with <a href="https://crates.io/crates/bit-set">bit-set</a>
   </summary>
 
 ```
