@@ -12,6 +12,39 @@ This project aims to replace [bit-set](https://crates.io/crates/bit-set), which 
 - Friendly APIs.
 - Performance.
 
+## Performance
+
+Performance comparison with [bit-set](https://crates.io/crates/bit-set):
+
+```
+test insert/bit_set ... bench:       55976 ns/iter (+/- 2456)
+test insert/bittyset ... bench:       19206 ns/iter (+/- 1622)
+
+test remove/bit_set ... bench:       26914 ns/iter (+/- 975)
+test remove/bittyset ... bench:        9013 ns/iter (+/- 359)
+
+test contains/bit_set ... bench:        8498 ns/iter (+/- 175)
+test contains/bittyset ... bench:        4200 ns/iter (+/- 34)
+
+test union/bit_set ... bench:        2897 ns/iter (+/- 483)
+test union/bittyset ... bench:        1670 ns/iter (+/- 272)
+
+test intersection/bit_set ... bench:        2654 ns/iter (+/- 130)
+test intersection/bittyset ... bench:        1968 ns/iter (+/- 188)
+
+test difference/bit_set ... bench:        2835 ns/iter (+/- 226)
+test difference/bittyset ... bench:        1712 ns/iter (+/- 254)
+
+test symmetric_difference/bit_set ... bench:        2616 ns/iter (+/- 131)
+test symmetric_difference/bittyset ... bench:        1956 ns/iter (+/- 188)
+
+test is_subset/bit_set ... bench:          88 ns/iter (+/- 19)
+test is_subset/bittyset ... bench:          87 ns/iter (+/- 21)
+
+test is_subset(self)/bit_set ... bench:        1344 ns/iter (+/- 95)
+test is_subset(self)/bittyset ... bench:          33 ns/iter (+/- 10)
+```
+
 ## Installing
 
 Add the following line to your `Cargo.toml`,
