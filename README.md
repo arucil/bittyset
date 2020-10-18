@@ -1,7 +1,7 @@
 # bittyset
 
-![crates.io](https://img.shields.io/crates/v/bittyset.svg)
-![docs.rs](https://docs.rs/bittyset/badge.svg)
+[![crates.io](https://img.shields.io/crates/v/bittyset.svg)](https://crates.io/crates/bittyset)
+[![docs.rs](https://docs.rs/bittyset/badge.svg)](https://docs.rs/bittyset)
 
 A `BitSet` for manipulating bit sets.
 
@@ -11,10 +11,10 @@ This project aims to replace [bit-set](https://crates.io/crates/bit-set), which 
 
 - Friendly APIs.
 - Performance.
-
-## Performance
-
-Performance comparison with [bit-set](https://crates.io/crates/bit-set):
+<details>
+  <summary>
+    Performance comparison with [bit-set](https://crates.io/crates/bit-set):
+  </summary>
 
 ```
 test insert/bit_set ... bench:       55976 ns/iter (+/- 2456)
@@ -44,6 +44,7 @@ test is_subset/bittyset ... bench:          87 ns/iter (+/- 21)
 test is_subset(self)/bit_set ... bench:        1344 ns/iter (+/- 95)
 test is_subset(self)/bittyset ... bench:          33 ns/iter (+/- 10)
 ```
+</details>
 
 ## Installing
 
