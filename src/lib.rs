@@ -331,7 +331,7 @@ where
     self | other
   }
 
-  /// Computes the union of the set and `other` and then assigns the output to the set.
+  /// Computes the union of the set and `other` in place.
   ///
   /// A corresponding [BitOrAssign](https://doc.rust-lang.org/std/ops/trait.BitOrAssign.html) implementation is also available, i.e. `a |= b`.
   ///
@@ -372,8 +372,7 @@ where
     self & other
   }
 
-  /// Computes the intersection of the set and `other` and then assigns the
-  /// output to the set.
+  /// Computes the intersection of the set and `other` in place.
   ///
   /// A corresponding [BitAndAssign](https://doc.rust-lang.org/std/ops/trait.BitAndAssign.html) implementation is also available, i.e. `a &= b`.
   ///
@@ -414,8 +413,7 @@ where
     self - other
   }
 
-  /// Computes the difference of the set and `other` and then assigns the output
-  /// to the set.
+  /// Computes the difference of the set and `other` in place.
   ///
   /// A corresponding [SubAssign](https://doc.rust-lang.org/std/ops/trait.SubAssign.html) implementation is also available, i.e. `a -= b`.
   ///
@@ -456,8 +454,7 @@ where
     self ^ other
   }
 
-  /// Computes the symmetric difference of the set and `other` and then assigns
-  /// the output to the set.
+  /// Computes the symmetric difference of the set and `other` in place.
   ///
   /// A corresponding [BitXorAssign](https://doc.rust-lang.org/std/ops/trait.BitXorAssign.html) implementation is also available, i.e. `a ^= b`.
   ///
