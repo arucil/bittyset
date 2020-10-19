@@ -104,20 +104,20 @@ macro_rules! op_impl_assign_ref_body {
       } else {
         $self.vec.truncate($rhs.vec.len());
       }
-      $fn($self, &$rhs.vec, rhs_nbits);
+      $fn($self, &$rhs.vec, rhs_nbits)
     } else {
-      $fn($self, &$rhs.vec, $rhs.num_bits);
+      $fn($self, &$rhs.vec, $rhs.num_bits)
     }
   }};
   ( $self:ident, $rhs:ident, $fn:ident ) => {{
-    $fn($self, &$rhs.vec, $rhs.num_bits);
+    $fn($self, &$rhs.vec, $rhs.num_bits)
   }};
 }
 
 macro_rules! op_impl {
-  ( $fn:ident ,; ($name:ident, $method:ident, $assign_op:tt),
+  ( $fn:ident , ($name:ident, $method:ident, $assign_op:tt),
     ($assign_name:ident, $assign_method:ident),
-    ( $lhs:ident, $rhs_vec:ident, $rhs_nbits:ident $(, $swap_cond:tt)? ),
+    ( $lhs:ident, $rhs_vec:ident, $rhs_nbits:ident $(, $swap_cond:tt)? )
     $body:tt
   ) => {
     impl<T: BitBlock> $name<BitSet<T>> for BitSet<T> {
@@ -140,32 +140,37 @@ macro_rules! op_impl {
     impl<T: BitBlock> $assign_name<BitSet<T>> for BitSet<T> {
       #[allow(unused)]
       fn $assign_method(&mut self, mut rhs: BitSet<T>) {
-        op_impl_assign_body!{ self, rhs, $fn $(, $swap_cond)?}
+        op_impl_assign_body!{ self, rhs, $fn $(, $swap_cond)?};
       }
     }
 
     impl<'a, T: BitBlock> $assign_name<&'a BitSet<T>> for BitSet<T> {
       fn $assign_method(&mut self, rhs: &'a BitSet<T>) {
-        op_impl_assign_ref_body!{ self, rhs, $fn $(, $swap_cond)?}
+        op_impl_assign_ref_body!{ self, rhs, $fn $(, $swap_cond)?};
       }
     }
 
     #[inline(always)]
-    fn $fn<T: BitBlock>($lhs: &mut BitSet<T>, $rhs_vec: &[T], $rhs_nbits: usize) {
+    fn $fn<T: BitBlock>(
+      $lhs: &mut BitSet<T>,
+      $rhs_vec: &[T],
+      $rhs_nbits: usize
+    ) {
       $body
     }
   };
 
-  ( ($name:ident, $method:ident, $assign_op:tt),
-    ($assign_name:ident, $assign_method:ident),
-    ( $lhs:ident, $rhs_vec:ident, $rhs_nbits:ident $(, $swap_cond:tt)?),
-    $body:tt
+  ( op = ($name:ident, $method:ident, $assign_op:tt),
+    $(swap_cond = $swap_cond:tt ,)?
+    op_assign = ($assign_name:ident, $assign_method:ident),
+    ( $lhs:ident, $rhs_vec:ident, $rhs_nbits:ident )
+    $body:expr
   ) => {
     gensym::gensym!{
       op_impl!{
-        ; ($name, $method, $assign_op),
+        ($name, $method, $assign_op),
         ($assign_name, $assign_method),
-        ($lhs, $rhs_vec, $rhs_nbits $(, $swap_cond)?),
+        ($lhs, $rhs_vec, $rhs_nbits $(, $swap_cond)?)
         $body
       }
     }
@@ -173,10 +178,10 @@ macro_rules! op_impl {
 }
 
 op_impl!{
-  (BitOr, bitor, |=),
-  (BitOrAssign, bitor_assign),
-  (lhs, rhs_vec, rhs_nbits, <),
-  {
+  op = (BitOr, bitor, |=),
+  swap_cond = <,
+  op_assign = (BitOrAssign, bitor_assign),
+  (lhs, rhs_vec, rhs_nbits) {
     let nblks = crate::compute_num_blocks::<T>(lhs.num_bits.min(rhs_nbits));
 
     for i in 0..nblks {
@@ -186,10 +191,10 @@ op_impl!{
 }
 
 op_impl!{
-  (BitAnd, bitand, &=),
-  (BitAndAssign, bitand_assign),
-  (lhs, rhs_vec, rhs_nbits, >),
-  {
+  op = (BitAnd, bitand, &=),
+  swap_cond = >,
+  op_assign = (BitAndAssign, bitand_assign),
+  (lhs, rhs_vec, rhs_nbits) {
     let nblks = crate::compute_num_blocks::<T>(lhs.num_bits.min(rhs_nbits));
 
     for i in 0..nblks {
@@ -201,10 +206,10 @@ op_impl!{
 }
 
 op_impl!{
-  (BitXor, bitxor, ^=),
-  (BitXorAssign, bitxor_assign),
-  (lhs, rhs_vec, rhs_nbits, <),
-    {
+  op = (BitXor, bitxor, ^=),
+  swap_cond = <,
+  op_assign = (BitXorAssign, bitxor_assign),
+  (lhs, rhs_vec, rhs_nbits) {
     let nblks = crate::compute_num_blocks::<T>(lhs.num_bits.min(rhs_nbits));
 
     for i in 0..nblks {
@@ -216,10 +221,9 @@ op_impl!{
 }
 
 op_impl!{
-  (Sub, sub, -=),
-  (SubAssign, sub_assign),
-  (lhs, rhs_vec, rhs_nbits),
-  {
+  op = (Sub, sub, -=),
+  op_assign = (SubAssign, sub_assign),
+  (lhs, rhs_vec, rhs_nbits) {
     let nblks = crate::compute_num_blocks::<T>(lhs.num_bits.min(rhs_nbits));
 
     for i in 0..nblks {
