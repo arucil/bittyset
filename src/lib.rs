@@ -209,6 +209,23 @@ where
     Iter::new(self)
   }
 
+  /// Iterates over the `BitSet`, producing `usize`s representing the elements
+  /// in the set, in ascending order, from a given start bit index
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// use bittyset::bitset;
+  ///
+  /// let set1 = bitset![7,15,3,5,18];
+  /// let vec1 = set1.iter_from(15).collect::<Vec<usize>>();
+  ///
+  /// assert_eq!(vec1, vec![15,18]);
+  /// ```
+  pub fn iter_from(&self, start: usize) -> Iter<T> {
+    Iter::new_from(self, start)
+  }
+
   /// Returns the number of elements in the set.
   pub fn len(&self) -> usize {
     self.vec.iter().map(|x| x.count_ones() as usize).sum()

@@ -13,13 +13,25 @@ pub struct Iter<'a, T> {
   bit: usize,
 }
 
-impl<'a, T> Iter<'a, T> {
+impl<'a, T> Iter<'a, T> 
+where
+  T: BitBlock
+{
   pub(crate) fn new(set: &'a BitSet<T>) -> Self {
     Self {
       slice: &set.vec,
       num_bits: set.num_bits,
       index: 0,
       bit: 0,
+    }
+  }
+  pub(crate) fn new_from(set: &'a BitSet<T>, start: usize) -> Self {
+    let (index, bit) = (start / T::NUM_BITS, start % T::NUM_BITS);
+    Self {
+      slice: &set.vec,
+      num_bits: set.num_bits,
+      index,
+      bit,
     }
   }
 }
