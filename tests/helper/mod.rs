@@ -7,7 +7,7 @@ pub struct OneMore {
 }
 
 impl Arbitrary for OneMore {
-  fn arbitrary<G: Gen>(g: &mut G) -> Self {
+  fn arbitrary(g: &mut Gen) -> Self {
     let vec = Vec::<u16>::arbitrary(g);
     let x = loop {
       let x = u16::arbitrary(g);
@@ -28,7 +28,7 @@ pub struct TwoVec {
 }
 
 impl Arbitrary for TwoVec {
-  fn arbitrary<G: Gen>(g: &mut G) -> Self {
+  fn arbitrary(g: &mut Gen) -> Self {
     let vec1 = Vec::<u16>::arbitrary(g);
     let mut vec2 = Vec::<u16>::arbitrary(g);
     if vec2.is_empty() {
