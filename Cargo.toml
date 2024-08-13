@@ -1,6 +1,6 @@
 [package]
 name = "bittyset"
-version = "0.1.0"
+version = "0.1.1"
 description = "A BitSet type for manipulating bit sets."
 homepage = "https://github.com/arucil/bittyset"
 repository = "https://github.com/arucil/bittyset"
